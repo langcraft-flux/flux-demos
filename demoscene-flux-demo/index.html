@@ -3,159 +3,129 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flux Demo Scene</title>
+  <title>Flux Demo Scene // Turbo Mix</title>
   <style>
     :root {
-      --bg: #05010a;
-      --fg: #f5e9ff;
-      --accent: #ff3cac;
-      --accent2: #00f0ff;
-      --accent3: #ffe45e;
+      --bg: #040109;
+      --fg: #f7ecff;
+      --hot: #ff3cac;
+      --cyan: #00f0ff;
+      --acid: #ffe45e;
+      --violet: #a86dff;
     }
-
     * { box-sizing: border-box; }
     html, body {
       margin: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at 50% 30%, #14071f 0%, #05010a 55%, #000 100%);
-      color: var(--fg);
-      font-family: "Trebuchet MS", "Verdana", system-ui, sans-serif;
       overflow: hidden;
+      background: radial-gradient(circle at 50% 25%, #170726 0%, #040109 60%, #000 100%);
+      color: var(--fg);
+      font-family: Verdana, system-ui, sans-serif;
     }
-
     canvas {
       width: 100vw;
       height: 100vh;
       display: block;
       image-rendering: pixelated;
     }
-
-    #overlay, #intro {
+    #intro {
       position: fixed;
       inset: 0;
-      pointer-events: none;
-    }
-
-    #intro {
+      z-index: 5;
       display: grid;
       place-items: center;
-      background: linear-gradient(180deg, rgba(3, 0, 8, 0.95), rgba(10, 2, 18, 0.84));
-      pointer-events: auto;
-      transition: opacity 500ms ease;
-      z-index: 3;
+      background: linear-gradient(180deg, rgba(5,0,10,0.96), rgba(14,5,24,0.86));
+      transition: opacity 450ms ease;
     }
-
-    #intro.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
+    #intro.hidden { opacity: 0; visibility: hidden; }
     .panel {
-      width: min(720px, 92vw);
-      border: 2px solid rgba(255,255,255,0.25);
-      background: rgba(12, 8, 24, 0.88);
-      box-shadow: 0 0 30px rgba(255, 60, 172, 0.25), inset 0 0 30px rgba(0, 240, 255, 0.08);
-      padding: 24px;
+      width: min(760px, 92vw);
+      padding: 26px;
       text-align: center;
+      border: 2px solid rgba(255,255,255,0.18);
+      background: rgba(12, 8, 26, 0.88);
+      box-shadow: 0 0 50px rgba(255,60,172,0.22), inset 0 0 35px rgba(0,240,255,0.08);
     }
-
     .logo {
-      font-size: clamp(34px, 7vw, 64px);
-      letter-spacing: 0.15em;
+      font-size: clamp(36px, 7vw, 72px);
       font-weight: 900;
       text-transform: uppercase;
-      color: white;
-      text-shadow:
-        0 0 8px rgba(255,255,255,0.7),
-        0 0 16px rgba(255,60,172,0.9),
-        0 0 30px rgba(0,240,255,0.75);
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      color: #cab7dd;
-      margin-bottom: 18px;
-      font-size: 14px;
-      line-height: 1.5;
-      text-transform: uppercase;
       letter-spacing: 0.18em;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(255,255,255,0.65), 0 0 18px rgba(255,60,172,0.9), 0 0 32px rgba(0,240,255,0.75);
     }
-
+    .subtitle {
+      margin: 12px 0 20px;
+      color: #ccb8dc;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      line-height: 1.6;
+      font-size: 14px;
+    }
     button {
-      pointer-events: auto;
       cursor: pointer;
       border: 0;
-      padding: 14px 24px;
+      padding: 14px 26px;
       font: inherit;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+      font-weight: 900;
       text-transform: uppercase;
-      color: #160611;
-      background: linear-gradient(90deg, var(--accent3), var(--accent), var(--accent2));
-      box-shadow: 0 0 22px rgba(255, 60, 172, 0.45);
+      letter-spacing: 0.14em;
+      color: #14040e;
+      background: linear-gradient(90deg, var(--acid), var(--hot), var(--cyan));
+      box-shadow: 0 0 24px rgba(255,60,172,0.35);
     }
-
-    button:hover { filter: brightness(1.08); }
-
     #hud {
       position: fixed;
-      top: 14px;
+      top: 12px;
       left: 16px;
       right: 16px;
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      z-index: 3;
       text-transform: uppercase;
       letter-spacing: 0.18em;
-      color: rgba(255,255,255,0.85);
-      text-shadow: 0 0 10px rgba(0,0,0,0.9);
-      z-index: 2;
+      font-size: 12px;
+      color: rgba(255,255,255,0.86);
+      text-shadow: 0 0 10px rgba(0,0,0,0.95);
       pointer-events: none;
     }
-
+    #footer {
+      position: fixed;
+      right: 16px;
+      bottom: 74px;
+      text-align: right;
+      z-index: 3;
+      font-size: 11px;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.76);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      pointer-events: none;
+    }
     #scroller-wrap {
       position: fixed;
       left: 0;
       right: 0;
-      bottom: 22px;
-      height: 48px;
+      bottom: 18px;
+      height: 46px;
       overflow: hidden;
-      z-index: 2;
+      z-index: 3;
       pointer-events: none;
     }
-
     #scroller {
       position: absolute;
       white-space: nowrap;
       font-size: clamp(18px, 2.3vw, 28px);
       font-weight: 900;
-      letter-spacing: 0.18em;
-      color: #fef6ff;
       text-transform: uppercase;
-      text-shadow:
-        2px 2px 0 rgba(255,60,172,0.8),
-        -2px -2px 0 rgba(0,240,255,0.7),
-        0 0 16px rgba(255,255,255,0.35);
+      letter-spacing: 0.18em;
+      color: #fff6ff;
+      text-shadow: 2px 2px 0 rgba(255,60,172,0.8), -2px -2px 0 rgba(0,240,255,0.7), 0 0 16px rgba(255,255,255,0.25);
       will-change: transform;
     }
-
-    #footer {
-      position: fixed;
-      right: 16px;
-      bottom: 76px;
-      text-align: right;
-      font-size: 12px;
-      line-height: 1.5;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: rgba(255,255,255,0.72);
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .blink { animation: blink 1s steps(2, end) infinite; }
-    @keyframes blink { 50% { opacity: 0.25; } }
+    .blink { animation: blink 1s steps(2,end) infinite; }
+    @keyframes blink { 50% { opacity: 0.22; } }
   </style>
 </head>
 <body>
@@ -163,26 +133,24 @@
 
   <div id="intro">
     <div class="panel">
-      <div class="logo">FLUX DEMO</div>
-      <div class="subtitle">A small browser trackmo homage for John — neon tunnels, starfields, chrome text and procedural bleeps.</div>
-      <button id="startBtn">Start Demo</button>
-      <p style="margin-top:16px;color:#9e90b7;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Best with sound on. Click or press space to launch.</p>
+      <div class="logo">Flux Turbo Demo</div>
+      <div class="subtitle">More stars. More chrome. More impossible spinning geometry. More pumping browser techno.</div>
+      <button id="startBtn">Launch Demo</button>
+      <p style="margin-top:16px;color:#9d90b7;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;">Tap to start audio + visuals. Best loud.</p>
     </div>
   </div>
 
   <div id="hud">
-    <div>Flux Crew // Browser Trackmo</div>
+    <div>Flux Crew // Turbo Mix</div>
     <div id="phaseLabel">Booting...</div>
   </div>
 
   <div id="footer">
-    Real-time canvas + WebAudio<br />
-    Somewhere between Amiga memory and late-90s PC ego <span class="blink">_</span>
+    realtime canvas + webaudio<br />
+    starfields // cubes // rings // tunnels <span class="blink">_</span>
   </div>
 
-  <div id="scroller-wrap">
-    <div id="scroller"></div>
-  </div>
+  <div id="scroller-wrap"><div id="scroller"></div></div>
 
   <script>
     const canvas = document.getElementById('screen');
@@ -191,159 +159,134 @@
     const startBtn = document.getElementById('startBtn');
     const phaseLabel = document.getElementById('phaseLabel');
     const scroller = document.getElementById('scroller');
-
     const DPR = Math.min(window.devicePixelRatio || 1, 2);
-    let width = 0;
-    let height = 0;
-    let audioCtx = null;
-    let masterGain = null;
-    let startedAt = 0;
-    let running = false;
-    let bassLfo = 0;
+
+    let width = 0, height = 0;
+    let audioCtx = null, masterGain = null, limiter = null;
+    let startedAt = 0, running = false;
     let audioWarning = '';
 
-    const scrollerText = ' GREETINGS TO JOHN // THIS IS A SMALL HOMAGE TO THE DEMOSCENE // PLASMA // TUNNEL // STARS // CHROME TEXT // SYNTH BASS // KEEP THE FAITH // '; 
-    scroller.textContent = scrollerText.repeat(4);
+    const scrollerText = ' GREETINGS JOHN // DEMOSCENE TURBO MODE ENGAGED // STARFIELDS // CHROME CUBES // LASER RINGS // PUMPING TECHNO // BROWSER HARDWARE ABUSE // '; 
+    scroller.textContent = scrollerText.repeat(5);
 
-    const stars = Array.from({ length: 180 }, () => ({
-      x: (Math.random() * 2 - 1) * 1.8,
-      y: (Math.random() * 2 - 1) * 1.8,
-      z: Math.random() * 0.9 + 0.1,
-      hue: Math.random() * 120 + 180
+    const stars = Array.from({ length: 420 }, () => ({
+      x: (Math.random() * 2 - 1) * 2.2,
+      y: (Math.random() * 2 - 1) * 2.2,
+      z: Math.random() * 1.2 + 0.02,
+      hue: 180 + Math.random() * 140
+    }));
+
+    const cubes = Array.from({ length: 22 }, (_, i) => ({
+      angle: i * 0.31,
+      distance: 1.5 + i * 0.32,
+      spin: 0.6 + Math.random() * 1.4,
+      tilt: Math.random() * Math.PI,
+      scale: 0.5 + Math.random() * 1.2,
+      hue: (i * 22) % 360
+    }));
+
+    const ringBursts = Array.from({ length: 18 }, (_, i) => ({
+      phase: i / 18,
+      hue: 180 + i * 8
     }));
 
     const phases = [
-      { name: 'Boot Sector', start: 0, end: 8 },
-      { name: 'Vector Tunnel', start: 8, end: 18 },
-      { name: 'Plasma Bloom', start: 18, end: 28 },
-      { name: 'Chrome Sigil', start: 28, end: 42 },
-      { name: 'Starfield Exit', start: 42, end: 999 }
+      { name: 'Boot Sector', start: 0, end: 7 },
+      { name: 'Star Warp', start: 7, end: 16 },
+      { name: 'Cube Storm', start: 16, end: 28 },
+      { name: 'Laser Tunnel', start: 28, end: 40 },
+      { name: 'Chrome Sigil', start: 40, end: 56 },
+      { name: 'Night Drive', start: 56, end: 999 }
     ];
 
     function resize() {
-      width = Math.floor(window.innerWidth * DPR);
-      height = Math.floor(window.innerHeight * DPR);
+      width = Math.floor(innerWidth * DPR);
+      height = Math.floor(innerHeight * DPR);
       canvas.width = width;
       canvas.height = height;
-      canvas.style.width = window.innerWidth + 'px';
-      canvas.style.height = window.innerHeight + 'px';
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
       ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
-
     function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
     function smoothstep(a, b, x) {
       const t = clamp((x - a) / (b - a), 0, 1);
       return t * t * (3 - 2 * t);
     }
+    function timeNow() { return running ? (performance.now() - startedAt) / 1000 : 0; }
+    function phaseAt(t) { return phases.find(p => t >= p.start && t < p.end) || phases[phases.length - 1]; }
 
-    function currentTime() {
-      return running ? (performance.now() - startedAt) / 1000 : 0;
-    }
-
-    function currentPhase(t) {
-      return phases.find(p => t >= p.start && t < p.end) || phases[phases.length - 1];
+    function project(x, y, z, fov = 420) {
+      const scale = fov / (fov + z);
+      return {
+        x: width / 2 + x * scale,
+        y: height / 2 + y * scale,
+        scale
+      };
     }
 
     function drawBackground(t) {
       const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, '#13031c');
-      grad.addColorStop(0.45, '#05010a');
-      grad.addColorStop(1, '#000000');
+      grad.addColorStop(0, '#150724');
+      grad.addColorStop(0.5, '#05010a');
+      grad.addColorStop(1, '#000');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
-      const pulse = 0.5 + 0.5 * Math.sin(t * 2.1 + bassLfo * 4);
       ctx.globalCompositeOperation = 'screen';
-      ctx.fillStyle = `rgba(255, 30, 150, ${0.05 + pulse * 0.05})`;
-      ctx.beginPath();
-      ctx.arc(width * 0.5, height * 0.35, width * (0.25 + 0.05 * pulse), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = `rgba(0, 220, 255, ${0.04 + (1 - pulse) * 0.05})`;
-      ctx.beginPath();
-      ctx.arc(width * 0.6, height * 0.5, width * (0.18 + 0.03 * Math.cos(t * 1.4)), 0, Math.PI * 2);
-      ctx.fill();
+      for (let i = 0; i < 4; i++) {
+        const px = width * (0.2 + 0.2 * i) + Math.sin(t * (0.6 + i * 0.23)) * width * 0.09;
+        const py = height * (0.18 + 0.13 * i) + Math.cos(t * (0.7 + i * 0.2)) * height * 0.07;
+        const r = width * (0.10 + 0.03 * i);
+        const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+        g.addColorStop(0, i % 2 ? 'rgba(255,60,172,0.20)' : 'rgba(0,240,255,0.16)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+      }
       ctx.globalCompositeOperation = 'source-over';
     }
 
     function drawStars(t) {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      for (const star of stars) {
-        star.z -= 0.012 + 0.02 * (0.5 + 0.5 * Math.sin(t * 1.5));
-        if (star.z <= 0.02) {
-          star.x = (Math.random() * 2 - 1) * 1.8;
-          star.y = (Math.random() * 2 - 1) * 1.8;
-          star.z = 1;
-          star.hue = Math.random() * 120 + 180;
+      const speed = 0.012 + 0.038 * smoothstep(7, 12, t);
+      for (const s of stars) {
+        s.z -= speed;
+        if (s.z <= 0.02) {
+          s.x = (Math.random() * 2 - 1) * 2.2;
+          s.y = (Math.random() * 2 - 1) * 2.2;
+          s.z = 1.2;
+          s.hue = 180 + Math.random() * 140;
         }
-        const px = width * 0.5 + (star.x / star.z) * width * 0.32;
-        const py = height * 0.5 + (star.y / star.z) * height * 0.32;
-        const r = clamp((1 - star.z) * 4.5, 1, 6);
-        ctx.fillStyle = `hsla(${star.hue}, 100%, 75%, ${clamp(1 - star.z, 0.2, 1)})`;
-        ctx.fillRect(px, py, r, r);
-      }
-      ctx.restore();
-    }
-
-    function drawTunnel(t) {
-      ctx.save();
-      ctx.translate(width / 2, height / 2);
-      ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < 42; i++) {
-        const p = i / 42;
-        const z = ((t * 1.45 + p) % 1);
-        const radius = (1 - z) * Math.min(width, height) * 0.44;
-        const wobble = Math.sin(t * 2 + i * 0.4) * 14 + Math.cos(t * 1.3 + i * 0.3) * 12;
-        ctx.strokeStyle = `hsla(${(i * 17 + t * 110) % 360}, 95%, ${60 + 20 * Math.sin(t + i)}%, ${0.14 + 0.22 * (1 - z)})`;
-        ctx.lineWidth = 1 + (1 - z) * 5;
+        const px = width / 2 + (s.x / s.z) * width * 0.32;
+        const py = height / 2 + (s.y / s.z) * height * 0.32;
+        const len = clamp((1.24 - s.z) * 22, 1, 26);
+        const alpha = clamp(1.1 - s.z, 0.15, 1);
+        ctx.strokeStyle = `hsla(${s.hue},100%,75%,${alpha})`;
+        ctx.lineWidth = clamp((1.16 - s.z) * 3.8, 1, 5);
         ctx.beginPath();
-        for (let a = 0; a <= Math.PI * 2 + 0.001; a += Math.PI / 32) {
-          const rr = radius + Math.sin(a * 6 + t * 3 + i) * wobble;
-          const x = Math.cos(a + t * 0.28) * rr;
-          const y = Math.sin(a + t * 0.31) * rr * 0.66;
-          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + (s.x / s.z) * len, py + (s.y / s.z) * len);
         ctx.stroke();
       }
       ctx.restore();
     }
 
-    function drawPlasma(t) {
-      const cell = 10 * DPR;
+    function drawFloorGrid(t) {
       ctx.save();
-      ctx.globalAlpha = 0.38;
-      for (let y = 0; y < height; y += cell) {
-        for (let x = 0; x < width; x += cell) {
-          const nx = x / width;
-          const ny = y / height;
-          const v = Math.sin(nx * 11 + t * 2.2)
-            + Math.sin((ny * 14 - t * 1.7))
-            + Math.sin((nx + ny) * 10 + t * 1.1)
-            + Math.sin(Math.hypot(nx - 0.5, ny - 0.5) * 24 - t * 3.2);
-          const hue = 220 + v * 42 + Math.sin(t) * 30;
-          const light = 40 + v * 8;
-          ctx.fillStyle = `hsla(${hue}, 100%, ${light}%, 0.8)`;
-          ctx.fillRect(x, y, cell + 1, cell + 1);
-        }
-      }
-      ctx.restore();
-    }
-
-    function drawGrid(t) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.18)';
+      const horizon = height * 0.62;
+      ctx.strokeStyle = 'rgba(0,240,255,0.22)';
       ctx.lineWidth = DPR;
-      const horizon = height * 0.58;
-      for (let i = -12; i <= 12; i++) {
-        const x = width / 2 + i * width * 0.06;
+      for (let i = -14; i <= 14; i++) {
+        const x = width / 2 + i * width * 0.055;
         ctx.beginPath();
         ctx.moveTo(x, horizon);
-        ctx.lineTo(width / 2 + i * width * 0.12, height);
+        ctx.lineTo(width / 2 + i * width * 0.16, height);
         ctx.stroke();
       }
-      for (let i = 0; i < 18; i++) {
-        const p = (i + (t * 2.4 % 1)) / 18;
+      for (let i = 0; i < 22; i++) {
+        const p = (i + ((t * 3.2) % 1)) / 22;
         const y = horizon + p * p * (height - horizon);
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -353,44 +296,150 @@
       ctx.restore();
     }
 
-    function drawTitle(t) {
+    function drawRings(t) {
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.globalCompositeOperation = 'lighter';
+      for (const ring of ringBursts) {
+        const p = (t * 0.75 + ring.phase) % 1;
+        const r = p * Math.min(width, height) * 0.55;
+        ctx.strokeStyle = `hsla(${ring.hue + t * 90},100%,65%,${0.22 * (1 - p)})`;
+        ctx.lineWidth = (1 - p) * 8 * DPR;
+        ctx.beginPath();
+        ctx.arc(0, Math.sin(t * 2 + ring.phase * 8) * 26, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawTunnel(t) {
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 46; i++) {
+        const p = i / 46;
+        const z = ((t * 1.8 + p) % 1);
+        const radius = (1 - z) * Math.min(width, height) * 0.47;
+        ctx.strokeStyle = `hsla(${(i * 16 + t * 130) % 360},100%,${58 + 18 * Math.sin(t + i)}%,${0.16 + 0.24 * (1 - z)})`;
+        ctx.lineWidth = 1 + (1 - z) * 6;
+        ctx.beginPath();
+        for (let a = 0; a <= Math.PI * 2 + 0.001; a += Math.PI / 30) {
+          const rr = radius + Math.sin(a * 7 + t * 4 + i * 0.3) * 16;
+          const x = Math.cos(a + t * 0.44) * rr;
+          const y = Math.sin(a + t * 0.39) * rr * 0.72;
+          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function cubeVertices(size) {
+      return [
+        [-size,-size,-size],[ size,-size,-size],[ size, size,-size],[-size, size,-size],
+        [-size,-size, size],[ size,-size, size],[ size, size, size],[-size, size, size]
+      ];
+    }
+    const cubeEdges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+
+    function rotatePoint([x,y,z], ax, ay, az) {
+      let px=x, py=y, pz=z;
+      let c=Math.cos(ax), s=Math.sin(ax); [py,pz]=[py*c-pz*s, py*s+pz*c];
+      c=Math.cos(ay); s=Math.sin(ay); [px,pz]=[px*c+pz*s, -px*s+pz*c];
+      c=Math.cos(az); s=Math.sin(az); [px,py]=[px*c-py*s, px*s+py*c];
+      return [px,py,pz];
+    }
+
+    function drawCubes(t) {
+      const verts = cubeVertices(38 * DPR);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (const cube of cubes) {
+        const orbit = t * cube.spin + cube.angle;
+        const cx = Math.cos(orbit * 0.7) * width * 0.22;
+        const cy = Math.sin(orbit * 1.1 + cube.tilt) * height * 0.16;
+        const cz = 220 + Math.sin(orbit * 0.9) * 160 + cube.distance * 120;
+        const projected = verts.map(v => {
+          const r = rotatePoint(v, orbit * 0.9, orbit * 0.6, orbit * 1.2);
+          return project(cx + r[0] * cube.scale, cy + r[1] * cube.scale, cz + r[2] * cube.scale);
+        });
+        ctx.strokeStyle = `hsla(${(cube.hue + t * 75) % 360},100%,70%,0.65)`;
+        ctx.lineWidth = 2.2 * DPR;
+        for (const [a,b] of cubeEdges) {
+          ctx.beginPath();
+          ctx.moveTo(projected[a].x, projected[a].y);
+          ctx.lineTo(projected[b].x, projected[b].y);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawOrbField(t) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      for (let i = 0; i < 32; i++) {
+        const angle = t * (0.4 + i * 0.015) + i;
+        const x = width / 2 + Math.cos(angle * 1.3) * width * (0.08 + i * 0.012);
+        const y = height / 2 + Math.sin(angle * 0.9) * height * (0.05 + i * 0.01);
+        const r = (6 + (i % 5) * 4) * DPR;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3.5);
+        g.addColorStop(0, `hsla(${190 + i * 6 + t * 50},100%,70%,0.34)`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, r * 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawPlasma(t) {
+      const cell = 12 * DPR;
+      ctx.save();
+      ctx.globalAlpha = 0.32;
+      for (let y = 0; y < height; y += cell) {
+        for (let x = 0; x < width; x += cell) {
+          const nx = x / width, ny = y / height;
+          const v = Math.sin(nx * 14 + t * 2.6) + Math.sin(ny * 13 - t * 1.9) + Math.sin((nx + ny) * 11 + t * 1.3) + Math.sin(Math.hypot(nx - 0.5, ny - 0.5) * 28 - t * 3.5);
+          ctx.fillStyle = `hsla(${245 + v * 28 + Math.sin(t) * 18},100%,${38 + v * 7}%,0.8)`;
+          ctx.fillRect(x, y, cell + 1, cell + 1);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawLogo(t) {
       ctx.save();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const bounce = Math.sin(t * 2.6) * 10;
-      ctx.font = `900 ${Math.floor(Math.min(width, height) * 0.12)}px Impact, Haettenschweiler, sans-serif`;
-      ctx.fillStyle = '#f7f4ff';
-      ctx.shadowColor = 'rgba(255, 50, 170, 0.85)';
+      const bounce = Math.sin(t * 2.7) * 10;
+      ctx.font = `900 ${Math.floor(Math.min(width, height) * 0.11)}px Impact, Haettenschweiler, sans-serif`;
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = 'rgba(255,60,172,0.92)';
       ctx.shadowBlur = 28;
-      ctx.fillText('FLUX', width / 2, height * 0.28 + bounce);
-      ctx.shadowColor = 'rgba(0, 240, 255, 0.9)';
-      ctx.shadowBlur = 18;
-      ctx.fillStyle = '#180419';
+      ctx.fillText('FLUX', width / 2, height * 0.27 + bounce);
+      ctx.strokeStyle = 'rgba(0,240,255,0.92)';
       ctx.lineWidth = 4 * DPR;
-      ctx.strokeStyle = 'rgba(0,240,255,0.9)';
-      ctx.strokeText('FLUX', width / 2, height * 0.28 + bounce);
-
-      ctx.font = `700 ${Math.floor(Math.min(width, height) * 0.038)}px Verdana, sans-serif`;
+      ctx.shadowColor = 'rgba(0,240,255,0.86)';
+      ctx.strokeText('FLUX', width / 2, height * 0.27 + bounce);
+      ctx.font = `700 ${Math.floor(Math.min(width, height) * 0.036)}px Verdana, sans-serif`;
       ctx.fillStyle = '#ffe45e';
-      ctx.fillText('BROWSER TRACKMO // 2026', width / 2, height * 0.39);
+      ctx.fillText('Turbo Browser Trackmo', width / 2, height * 0.38);
       ctx.restore();
     }
 
     function drawSigil(t) {
       ctx.save();
       ctx.translate(width / 2, height / 2);
-      ctx.scale(1 + Math.sin(t * 1.8) * 0.04, 1 + Math.cos(t * 1.5) * 0.04);
-      ctx.rotate(t * 0.45);
-      const radius = Math.min(width, height) * 0.14;
-      for (let i = 0; i < 3; i++) {
-        ctx.rotate(Math.PI / 3);
-        ctx.strokeStyle = ['rgba(255,60,172,0.8)','rgba(0,240,255,0.8)','rgba(255,228,94,0.65)'][i];
-        ctx.lineWidth = (6 - i) * DPR;
+      ctx.rotate(t * 0.38);
+      ctx.globalCompositeOperation = 'lighter';
+      for (let layer = 0; layer < 4; layer++) {
+        ctx.strokeStyle = ['rgba(255,60,172,0.75)','rgba(0,240,255,0.82)','rgba(255,228,94,0.65)','rgba(168,109,255,0.55)'][layer];
+        ctx.lineWidth = (7 - layer) * DPR;
         ctx.beginPath();
-        for (let a = 0; a < Math.PI * 2; a += 0.01) {
-          const r = radius + Math.sin(a * 5 + t * 2 + i) * radius * 0.18;
-          const x = Math.cos(a) * r;
-          const y = Math.sin(a) * r;
+        for (let a = 0; a <= Math.PI * 2 + 0.001; a += 0.02) {
+          const r = Math.min(width, height) * (0.13 + layer * 0.018) + Math.sin(a * (5 + layer) + t * (2 + layer * 0.4)) * 18 * DPR;
+          const x = Math.cos(a + layer * 0.3) * r;
+          const y = Math.sin(a - layer * 0.2) * r;
           if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.closePath();
@@ -403,180 +452,13 @@
       ctx.save();
       ctx.globalAlpha = 0.16;
       for (let y = 0; y < height; y += 4 * DPR) {
-        ctx.fillStyle = y % (8 * DPR) === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.15)';
+        ctx.fillStyle = y % (8 * DPR) === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(0,0,0,0.16)';
         ctx.fillRect(0, y, width, 2 * DPR);
       }
       ctx.globalAlpha = 0.08;
       ctx.fillStyle = '#fff';
-      ctx.fillRect(0, (Math.sin(t * 12) * 0.5 + 0.5) * height, width, 4 * DPR);
+      ctx.fillRect(0, (0.5 + 0.5 * Math.sin(t * 11.5)) * height, width, 4 * DPR);
       ctx.restore();
-    }
-
-    function render() {
-      if (!running) return;
-      const t = currentTime();
-      const phase = currentPhase(t);
-      phaseLabel.textContent = phase.name;
-      drawBackground(t);
-      drawStars(t);
-      drawGrid(t);
-
-      const tunnelMix = smoothstep(4, 10, t) * (1 - smoothstep(24, 31, t));
-      if (tunnelMix > 0.01) {
-        ctx.save();
-        ctx.globalAlpha = tunnelMix;
-        drawTunnel(t);
-        ctx.restore();
-      }
-
-      const plasmaMix = smoothstep(16, 21, t) * (1 - smoothstep(34, 39, t));
-      if (plasmaMix > 0.01) {
-        ctx.save();
-        ctx.globalAlpha = plasmaMix;
-        drawPlasma(t);
-        ctx.restore();
-      }
-
-      const titleMix = 1 - smoothstep(20, 28, t);
-      if (titleMix > 0.01) {
-        ctx.save();
-        ctx.globalAlpha = titleMix;
-        drawTitle(t);
-        ctx.restore();
-      }
-
-      const sigilMix = smoothstep(25, 30, t);
-      if (sigilMix > 0.01) {
-        ctx.save();
-        ctx.globalAlpha = clamp(sigilMix, 0, 0.95);
-        drawSigil(t);
-        ctx.restore();
-      }
-
-      drawScanlines(t);
-      drawAudioWarning();
-
-      const scrollX = width - ((t * 180 * DPR) % (scroller.scrollWidth + width));
-      scroller.style.transform = `translateX(${scrollX / DPR}px)`;
-
-      requestAnimationFrame(render);
-    }
-
-    function makeKick(time, gain = 0.8) {
-      const osc = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(120, time);
-      osc.frequency.exponentialRampToValueAtTime(42, time + 0.12);
-      g.gain.setValueAtTime(gain, time);
-      g.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
-      osc.connect(g).connect(masterGain);
-      osc.start(time);
-      osc.stop(time + 0.16);
-    }
-
-    function makeHat(time, gain = 0.09) {
-      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.06, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      const src = audioCtx.createBufferSource();
-      const hp = audioCtx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 5000;
-      const g = audioCtx.createGain();
-      g.gain.setValueAtTime(gain, time);
-      g.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
-      src.buffer = buffer;
-      src.connect(hp).connect(g).connect(masterGain);
-      src.start(time);
-    }
-
-    function makeBass(time, noteHz, duration, gain = 0.18) {
-      const osc = audioCtx.createOscillator();
-      const osc2 = audioCtx.createOscillator();
-      const filter = audioCtx.createBiquadFilter();
-      const g = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc2.type = 'square';
-      osc.frequency.setValueAtTime(noteHz, time);
-      osc2.frequency.setValueAtTime(noteHz * 0.502, time);
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(280, time);
-      filter.frequency.linearRampToValueAtTime(900, time + duration * 0.35);
-      g.gain.setValueAtTime(0.001, time);
-      g.gain.linearRampToValueAtTime(gain, time + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
-      osc.connect(filter);
-      osc2.connect(filter);
-      filter.connect(g).connect(masterGain);
-      osc.start(time);
-      osc2.start(time);
-      osc.stop(time + duration + 0.02);
-      osc2.stop(time + duration + 0.02);
-    }
-
-    function makeLead(time, noteHz, duration, gain = 0.07) {
-      const osc = audioCtx.createOscillator();
-      const vibrato = audioCtx.createOscillator();
-      const vibratoGain = audioCtx.createGain();
-      const g = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(noteHz, time);
-      vibrato.type = 'sine';
-      vibrato.frequency.value = 5.8;
-      vibratoGain.gain.value = 8;
-      vibrato.connect(vibratoGain).connect(osc.frequency);
-      g.gain.setValueAtTime(0.001, time);
-      g.gain.linearRampToValueAtTime(gain, time + 0.03);
-      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
-      osc.connect(g).connect(masterGain);
-      vibrato.start(time);
-      osc.start(time);
-      osc.stop(time + duration + 0.02);
-      vibrato.stop(time + duration + 0.02);
-    }
-
-    async function startMusic() {
-      const AudioCtor = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtor) {
-        audioWarning = 'Visuals only: WebAudio unavailable on this browser';
-        return;
-      }
-
-      audioCtx = new AudioCtor();
-      if (audioCtx.state === 'suspended' && audioCtx.resume) {
-        await audioCtx.resume();
-      }
-
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = 0.26;
-      masterGain.connect(audioCtx.destination);
-
-      const bpm = 132;
-      const beat = 60 / bpm;
-      const bars = 64;
-      const bassline = [55, 55, 82.41, 55, 65.41, 55, 73.42, 82.41];
-      const melody = [220, 246.94, 293.66, 329.63, 293.66, 246.94, 220, 196];
-      const now = audioCtx.currentTime + 0.06;
-
-      for (let bar = 0; bar < bars; bar++) {
-        const base = now + bar * beat * 4;
-        makeKick(base);
-        makeKick(base + beat * 2, 0.72);
-        makeKick(base + beat * 3.5, 0.5);
-        for (let i = 0; i < 8; i++) makeHat(base + i * beat * 0.5, i % 2 ? 0.05 : 0.08);
-
-        for (let step = 0; step < 4; step++) {
-          const idx = (bar + step) % bassline.length;
-          makeBass(base + step * beat, bassline[idx], beat * 0.9, 0.16 + (step === 0 ? 0.05 : 0));
-        }
-
-        if (bar > 3) {
-          const note = melody[bar % melody.length];
-          makeLead(base + beat * 0.5, note, beat * 1.5, 0.05 + (bar % 8 === 0 ? 0.04 : 0));
-          if (bar % 4 === 2) makeLead(base + beat * 2.25, note * 1.5, beat * 0.75, 0.04);
-        }
-      }
     }
 
     function drawAudioWarning() {
@@ -584,9 +466,208 @@
       ctx.save();
       ctx.textAlign = 'center';
       ctx.font = `700 ${Math.max(14, Math.floor(Math.min(width, height) * 0.018))}px Verdana, sans-serif`;
-      ctx.fillStyle = 'rgba(255, 228, 94, 0.95)';
+      ctx.fillStyle = 'rgba(255,228,94,0.95)';
       ctx.fillText(audioWarning, width / 2, height * 0.92);
       ctx.restore();
+    }
+
+    function render() {
+      if (!running) return;
+      const t = timeNow();
+      const phase = phaseAt(t);
+      phaseLabel.textContent = phase.name;
+
+      drawBackground(t);
+      drawStars(t);
+      drawOrbField(t);
+      drawFloorGrid(t);
+
+      const logoMix = 1 - smoothstep(12, 18, t);
+      if (logoMix > 0.01) { ctx.save(); ctx.globalAlpha = logoMix; drawLogo(t); ctx.restore(); }
+
+      const ringMix = smoothstep(6, 11, t);
+      if (ringMix > 0.01) { ctx.save(); ctx.globalAlpha = ringMix * 0.85; drawRings(t); ctx.restore(); }
+
+      const cubeMix = smoothstep(12, 18, t) * (1 - smoothstep(44, 49, t));
+      if (cubeMix > 0.01) { ctx.save(); ctx.globalAlpha = cubeMix; drawCubes(t); ctx.restore(); }
+
+      const tunnelMix = smoothstep(24, 30, t) * (1 - smoothstep(51, 56, t));
+      if (tunnelMix > 0.01) { ctx.save(); ctx.globalAlpha = tunnelMix; drawTunnel(t); ctx.restore(); }
+
+      const plasmaMix = smoothstep(32, 38, t) * (1 - smoothstep(54, 60, t));
+      if (plasmaMix > 0.01) { ctx.save(); ctx.globalAlpha = plasmaMix; drawPlasma(t); ctx.restore(); }
+
+      const sigilMix = smoothstep(38, 44, t);
+      if (sigilMix > 0.01) { ctx.save(); ctx.globalAlpha = Math.min(0.96, sigilMix); drawSigil(t); ctx.restore(); }
+
+      drawScanlines(t);
+      drawAudioWarning();
+
+      const scrollX = width - ((t * 220 * DPR) % (scroller.scrollWidth + width));
+      scroller.style.transform = `translateX(${scrollX / DPR}px)`;
+      requestAnimationFrame(render);
+    }
+
+    function makeKick(time, gain = 0.85) {
+      const osc = audioCtx.createOscillator();
+      const click = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine';
+      click.type = 'triangle';
+      osc.frequency.setValueAtTime(150, time);
+      osc.frequency.exponentialRampToValueAtTime(42, time + 0.16);
+      click.frequency.setValueAtTime(900, time);
+      click.frequency.exponentialRampToValueAtTime(180, time + 0.03);
+      g.gain.setValueAtTime(gain, time);
+      g.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+      osc.connect(g); click.connect(g); g.connect(limiter);
+      osc.start(time); click.start(time);
+      osc.stop(time + 0.2); click.stop(time + 0.05);
+    }
+
+    function makeHat(time, gain = 0.05, open = false) {
+      const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * (open ? 0.18 : 0.07)), audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      const src = audioCtx.createBufferSource();
+      const hp = audioCtx.createBiquadFilter();
+      const bp = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+      hp.type = 'highpass'; hp.frequency.value = 5000;
+      bp.type = 'bandpass'; bp.frequency.value = open ? 8000 : 7000; bp.Q.value = 0.8;
+      g.gain.setValueAtTime(gain, time);
+      g.gain.exponentialRampToValueAtTime(0.001, time + (open ? 0.16 : 0.05));
+      src.buffer = buffer;
+      src.connect(hp).connect(bp).connect(g).connect(limiter);
+      src.start(time);
+    }
+
+    function makeClap(time, gain = 0.11) {
+      const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.22), audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        const env = Math.exp(-18 * i / data.length);
+        data[i] = (Math.random() * 2 - 1) * env * (i % 23 < 3 ? 1 : 0.6);
+      }
+      const src = audioCtx.createBufferSource();
+      const bp = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+      bp.type = 'bandpass'; bp.frequency.value = 1600; bp.Q.value = 0.7;
+      g.gain.setValueAtTime(gain, time);
+      g.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+      src.buffer = buffer;
+      src.connect(bp).connect(g).connect(limiter);
+      src.start(time);
+    }
+
+    function makeBass(time, noteHz, duration, gain = 0.16, slide = 1) {
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const filter = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+      osc1.type = 'sawtooth';
+      osc2.type = 'square';
+      osc1.frequency.setValueAtTime(noteHz * slide, time);
+      osc1.frequency.exponentialRampToValueAtTime(noteHz, time + 0.06);
+      osc2.frequency.setValueAtTime(noteHz * 0.5, time);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(240, time);
+      filter.frequency.linearRampToValueAtTime(1200, time + duration * 0.28);
+      filter.Q.value = 8;
+      g.gain.setValueAtTime(0.001, time);
+      g.gain.linearRampToValueAtTime(gain, time + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      osc1.connect(filter); osc2.connect(filter); filter.connect(g).connect(limiter);
+      osc1.start(time); osc2.start(time);
+      osc1.stop(time + duration + 0.02); osc2.stop(time + duration + 0.02);
+    }
+
+    function makeStab(time, noteHz, duration, gain = 0.07) {
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const filter = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+      osc1.type = 'sawtooth'; osc2.type = 'sawtooth';
+      osc1.frequency.value = noteHz; osc2.frequency.value = noteHz * 1.005;
+      filter.type = 'bandpass'; filter.frequency.setValueAtTime(1800, time); filter.Q.value = 1.2;
+      g.gain.setValueAtTime(0.001, time);
+      g.gain.linearRampToValueAtTime(gain, time + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      osc1.connect(filter); osc2.connect(filter); filter.connect(g).connect(limiter);
+      osc1.start(time); osc2.start(time);
+      osc1.stop(time + duration + 0.02); osc2.stop(time + duration + 0.02);
+    }
+
+    function makeLead(time, noteHz, duration, gain = 0.055) {
+      const osc = audioCtx.createOscillator();
+      const vib = audioCtx.createOscillator();
+      const vibGain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+      osc.type = 'triangle'; osc.frequency.value = noteHz;
+      vib.type = 'sine'; vib.frequency.value = 6.5; vibGain.gain.value = 9;
+      vib.connect(vibGain).connect(osc.frequency);
+      filter.type = 'highpass'; filter.frequency.value = 900;
+      g.gain.setValueAtTime(0.001, time);
+      g.gain.linearRampToValueAtTime(gain, time + 0.025);
+      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      osc.connect(filter).connect(g).connect(limiter);
+      vib.start(time); osc.start(time);
+      vib.stop(time + duration + 0.02); osc.stop(time + duration + 0.02);
+    }
+
+    async function startMusic() {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtor) { audioWarning = 'Visuals only: WebAudio unavailable'; return; }
+      audioCtx = new AudioCtor();
+      if (audioCtx.state === 'suspended' && audioCtx.resume) await audioCtx.resume();
+      masterGain = audioCtx.createGain();
+      limiter = audioCtx.createDynamicsCompressor();
+      masterGain.gain.value = 0.34;
+      limiter.threshold.value = -18;
+      limiter.knee.value = 14;
+      limiter.ratio.value = 8;
+      limiter.attack.value = 0.002;
+      limiter.release.value = 0.18;
+      limiter.connect(masterGain).connect(audioCtx.destination);
+
+      const bpm = 142;
+      const beat = 60 / bpm;
+      const bars = 80;
+      const bassline = [55, 55, 82.41, 55, 65.41, 65.41, 73.42, 82.41];
+      const stabs = [329.63, 392.0, 440.0, 493.88];
+      const lead = [659.25, 587.33, 523.25, 493.88, 440.0, 493.88, 523.25, 587.33];
+      const start = audioCtx.currentTime + 0.05;
+
+      for (let bar = 0; bar < bars; bar++) {
+        const base = start + bar * beat * 4;
+        makeKick(base, 0.95);
+        makeKick(base + beat, 0.55);
+        makeKick(base + beat * 2, 0.88);
+        makeKick(base + beat * 3, 0.62);
+        makeClap(base + beat, 0.12);
+        makeClap(base + beat * 3, 0.11);
+
+        for (let s = 0; s < 8; s++) {
+          makeHat(base + s * beat * 0.5, s % 2 ? 0.04 : 0.06, s === 7);
+        }
+
+        for (let step = 0; step < 4; step++) {
+          const idx = (bar + step) % bassline.length;
+          const slide = step === 0 ? 1.4 : 1.0;
+          makeBass(base + step * beat, bassline[idx], beat * 0.92, 0.14 + (step === 2 ? 0.02 : 0), slide);
+        }
+
+        if (bar > 3) {
+          makeStab(base + beat * 0.5, stabs[bar % stabs.length], beat * 0.42, 0.05);
+          makeStab(base + beat * 2.5, stabs[(bar + 2) % stabs.length], beat * 0.42, 0.048);
+        }
+        if (bar > 7) {
+          const note = lead[bar % lead.length];
+          makeLead(base + beat * 0.75, note, beat * 1.2, 0.048);
+          if (bar % 2 === 0) makeLead(base + beat * 2.75, note * 1.122, beat * 0.8, 0.04);
+        }
+      }
     }
 
     async function startDemo() {
@@ -595,26 +676,17 @@
       startedAt = performance.now();
       intro.classList.add('hidden');
       render();
-      try {
-        await startMusic();
-      } catch (err) {
+      try { await startMusic(); }
+      catch (err) {
         console.error(err);
         audioWarning = 'Visuals running, but audio failed on this browser';
       }
     }
 
     startBtn.addEventListener('click', startDemo);
-    startBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      startDemo();
-    }, { passive: false });
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        startDemo();
-      }
-    });
-    window.addEventListener('resize', resize);
+    startBtn.addEventListener('touchend', (e) => { e.preventDefault(); startDemo(); }, { passive: false });
+    addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); startDemo(); } });
+    addEventListener('resize', resize);
     resize();
   </script>
 </body>
