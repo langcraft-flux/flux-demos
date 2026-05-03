@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flux Demo Scene // Trackmo Cut</title>
+  <title>Flux Demo Scene // Velocity Cut</title>
   <style>
     :root {
       --hot: #ff3cac;
@@ -39,7 +39,7 @@
     }
     #intro.hidden { opacity: 0; visibility: hidden; }
     .panel {
-      width: min(780px, 92vw);
+      width: min(800px, 92vw);
       padding: 28px;
       text-align: center;
       border: 2px solid rgba(255,255,255,0.16);
@@ -133,21 +133,21 @@
 
   <div id="intro">
     <div class="panel">
-      <div class="logo">Flux Trackmo Cut</div>
-      <div class="subtitle">Your MP3 now drives an 8-scene browser demo: star warps, cube storms, tunnels, helices, skyline pulses, sigils, shard rain, and a finale mashup.</div>
+      <div class="logo">Flux Velocity Cut</div>
+      <div class="subtitle">Your MP3 now drives a faster-cut trackmo with heavy forward motion: fly-through starfields, incoming cube swarms, underpasses, reactor rings, shard rain, and a hard 15-second scene cadence.</div>
       <button id="startBtn">Launch Demo</button>
-      <p style="margin-top:16px;color:#9d90b7;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;">Tap to start. Demo stops before the track ends.</p>
+      <p style="margin-top:16px;color:#9d90b7;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;">Tap to start. Demo stops before the music tail.</p>
     </div>
   </div>
 
   <div id="hud">
-    <div>Flux Crew // Trackmo Cut</div>
+    <div>Flux Crew // Velocity Cut</div>
     <div id="phaseLabel">Booting...</div>
   </div>
 
   <div id="footer">
-    mp3-driven multi-scene demo<br />
-    stars // cubes // tunnels // sigils <span class="blink">_</span>
+    mp3-driven velocity trackmo<br />
+    flythroughs // underpasses // hard cuts <span class="blink">_</span>
   </div>
 
   <div id="scroller-wrap"><div id="scroller"></div></div>
@@ -161,7 +161,7 @@
     const scroller = document.getElementById('scroller');
     const soundtrack = document.getElementById('soundtrack');
     const DPR = Math.min(window.devicePixelRatio || 1, 2);
-    const SCENE_LEN = 28;
+    const SCENE_LEN = 15;
     const DEMO_LEN = 224;
     const FADE_START = 219;
 
@@ -172,43 +172,60 @@
     let stopTriggered = false;
 
     const scenes = [
-      'Boot Loader',
-      'Star Warp',
-      'Cube Storm',
-      'Laser Tunnel',
-      'Helix Reactor',
-      'Skyline Pulse',
-      'Sigil Forge',
-      'Final Overdrive'
+      'Boot Burn', 'Star Dive', 'Cube Rush', 'Underpass', 'Laser Bore',
+      'Helix Fall', 'LangCraft Skyline', 'Shard Drop', 'Orbital Sweep', 'Plasma Descent',
+      'Tunnel Crush', 'Chrome Rain', 'Sigil Reactor', 'Final Sprint', 'End Fade'
     ];
 
-    const scrollerText = ' GREETINGS JOHN // ATTACHED MP3 MODE ENABLED // MULTI-SCENE TRACKMO // STAR WARP // CUBE STORM // LASER TUNNEL // HELIX REACTOR // SKYLINE PULSE // SIGIL FORGE // FINAL OVERDRIVE // '; 
+    const scrollerText = ' GREETINGS JOHN // VELOCITY CUT ENABLED // 15 SECOND SCENE CUTS // FLY INTO THE OBJECTS // OBJECTS FLY UNDERNEATH YOU // STAR DIVE // CUBE RUSH // UNDERPASS // FINAL SPRINT // '; 
     scroller.textContent = scrollerText.repeat(4);
 
-    const stars = Array.from({ length: 460 }, () => ({
-      x: (Math.random() * 2 - 1) * 2.4,
-      y: (Math.random() * 2 - 1) * 2.4,
-      z: Math.random() * 1.2 + 0.02,
-      hue: 180 + Math.random() * 140
-    }));
-
-    const cubes = Array.from({ length: 26 }, (_, i) => ({
-      angle: i * 0.27,
-      distance: 1.5 + i * 0.22,
-      spin: 0.7 + Math.random() * 1.4,
-      tilt: Math.random() * Math.PI,
-      scale: 0.55 + Math.random() * 1.25,
-      hue: (i * 19) % 360
-    }));
-
-    const ringBursts = Array.from({ length: 22 }, (_, i) => ({ phase: i / 22, hue: 180 + i * 7 }));
-    const shards = Array.from({ length: 80 }, () => ({
-      x: (Math.random() * 2 - 1),
+    const stars = Array.from({ length: 520 }, () => resetStar({}));
+    const flyCubes = Array.from({ length: 38 }, (_, i) => resetFlyCube({ seed: i * 0.31 }, true));
+    const underColumns = Array.from({ length: 60 }, (_, i) => resetColumn({ seed: i * 0.17 }, true));
+    const shards = Array.from({ length: 120 }, () => ({
+      x: Math.random() * 2 - 1,
       y: Math.random(),
       z: Math.random(),
-      speed: 0.4 + Math.random() * 1.6,
+      speed: 0.5 + Math.random() * 2,
       hue: 180 + Math.random() * 160
     }));
+    const orbSwarm = Array.from({ length: 44 }, (_, i) => ({
+      lane: i / 44,
+      phase: Math.random() * Math.PI * 2,
+      hue: 180 + i * 3
+    }));
+    const ringBursts = Array.from({ length: 26 }, (_, i) => ({ phase: i / 26, hue: 170 + i * 7 }));
+
+    function resetStar(s) {
+      s.x = (Math.random() * 2 - 1) * 2.6;
+      s.y = (Math.random() * 2 - 1) * 2.6;
+      s.z = Math.random() * 1.2 + 0.03;
+      s.hue = 180 + Math.random() * 140;
+      return s;
+    }
+    function resetFlyCube(c, initial = false) {
+      c.x = (Math.random() * 2 - 1) * width * 0.42;
+      c.y = (Math.random() * 2 - 1) * height * 0.32;
+      c.z = initial ? 200 + Math.random() * 2600 : 2200 + Math.random() * 600;
+      c.size = (22 + Math.random() * 52) * DPR;
+      c.spin = 0.4 + Math.random() * 1.4;
+      c.tilt = Math.random() * Math.PI * 2;
+      c.hue = 180 + Math.random() * 180;
+      c.speed = 16 + Math.random() * 32;
+      return c;
+    }
+    function resetColumn(c, initial = false) {
+      c.seed ??= Math.random();
+      c.x = (Math.random() * 2 - 1) * width * 0.9;
+      c.z = initial ? 120 + Math.random() * 2600 : 2400 + Math.random() * 600;
+      c.width = (18 + Math.random() * 42) * DPR;
+      c.height = (120 + Math.random() * 320) * DPR;
+      c.yBase = height * (0.72 + Math.random() * 0.48);
+      c.hue = 180 + Math.random() * 140;
+      c.speed = 20 + Math.random() * 34;
+      return c;
+    }
 
     function resize() {
       width = Math.floor(innerWidth * DPR);
@@ -218,6 +235,8 @@
       canvas.style.width = innerWidth + 'px';
       canvas.style.height = innerHeight + 'px';
       ctx.setTransform(1, 0, 0, 1, 0, 0);
+      for (const c of flyCubes) if (!c.z) resetFlyCube(c, true);
+      for (const c of underColumns) if (!c.z) resetColumn(c, true);
     }
     function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
     function lerp(a, b, t) { return a + (b - a) * t; }
@@ -225,29 +244,40 @@
       const t = clamp((x - a) / (b - a), 0, 1);
       return t * t * (3 - 2 * t);
     }
-    function easePulse(t) { return 0.5 + 0.5 * Math.sin(t); }
-
     function nowTime() {
       if (!isNaN(soundtrack.currentTime) && soundtrack.currentTime > 0) return soundtrack.currentTime;
       return (performance.now() - startedAt) / 1000;
     }
-
     function project(x, y, z, fov = 460) {
       const scale = fov / (fov + z);
       return { x: width / 2 + x * scale, y: height / 2 + y * scale, scale };
     }
+    function rotatePoint([x,y,z], ax, ay, az) {
+      let px=x, py=y, pz=z;
+      let c=Math.cos(ax), s=Math.sin(ax); [py,pz]=[py*c-pz*s, py*s+pz*c];
+      c=Math.cos(ay); s=Math.sin(ay); [px,pz]=[px*c+pz*s, -px*s+pz*c];
+      c=Math.cos(az); s=Math.sin(az); [px,py]=[px*c-py*s, px*s+py*c];
+      return [px,py,pz];
+    }
+    function cubeVertices(size) {
+      return [
+        [-size,-size,-size],[ size,-size,-size],[ size, size,-size],[-size, size,-size],
+        [-size,-size, size],[ size,-size, size],[ size, size, size],[-size, size, size]
+      ];
+    }
+    const cubeEdges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
 
     function drawBackground(t, hueShift = 0) {
       const grad = ctx.createLinearGradient(0, 0, 0, height);
       grad.addColorStop(0, `hsl(${(270 + hueShift) % 360} 65% 10%)`);
-      grad.addColorStop(0.48, '#05010a');
+      grad.addColorStop(0.5, '#05010a');
       grad.addColorStop(1, '#000');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'screen';
       for (let i = 0; i < 5; i++) {
-        const px = width * (0.16 + 0.17 * i) + Math.sin(t * (0.6 + i * 0.17)) * width * 0.09;
-        const py = height * (0.14 + 0.12 * i) + Math.cos(t * (0.7 + i * 0.13)) * height * 0.08;
+        const px = width * (0.14 + 0.17 * i) + Math.sin(t * (0.6 + i * 0.15)) * width * 0.1;
+        const py = height * (0.14 + 0.12 * i) + Math.cos(t * (0.7 + i * 0.11)) * height * 0.08;
         const r = width * (0.08 + 0.025 * i);
         const g = ctx.createRadialGradient(px, py, 0, px, py, r);
         g.addColorStop(0, i % 2 ? 'rgba(255,60,172,0.22)' : 'rgba(0,240,255,0.18)');
@@ -258,24 +288,20 @@
       ctx.globalCompositeOperation = 'source-over';
     }
 
-    function drawStars(t, speedBoost = 1) {
+    function drawStars(t, speedBoost = 1.2, drift = 0) {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      const speed = (0.012 + 0.03 * speedBoost);
+      const speed = 0.012 + 0.032 * speedBoost;
       for (const s of stars) {
         s.z -= speed;
-        if (s.z <= 0.02) {
-          s.x = (Math.random() * 2 - 1) * 2.4;
-          s.y = (Math.random() * 2 - 1) * 2.4;
-          s.z = 1.2;
-          s.hue = 180 + Math.random() * 140;
-        }
+        s.x += drift * 0.0025;
+        if (s.z <= 0.03 || Math.abs(s.x) > 3 || Math.abs(s.y) > 3) resetStar(s);
         const px = width / 2 + (s.x / s.z) * width * 0.34;
         const py = height / 2 + (s.y / s.z) * height * 0.34;
-        const len = clamp((1.24 - s.z) * 28 * speedBoost, 1, 30);
-        const alpha = clamp(1.1 - s.z, 0.15, 1);
+        const len = clamp((1.24 - s.z) * 32 * speedBoost, 1, 38);
+        const alpha = clamp(1.14 - s.z, 0.14, 1);
         ctx.strokeStyle = `hsla(${s.hue},100%,75%,${alpha})`;
-        ctx.lineWidth = clamp((1.16 - s.z) * 4, 1, 5);
+        ctx.lineWidth = clamp((1.18 - s.z) * 4.6, 1, 5);
         ctx.beginPath();
         ctx.moveTo(px, py);
         ctx.lineTo(px + (s.x / s.z) * len, py + (s.y / s.z) * len);
@@ -284,20 +310,20 @@
       ctx.restore();
     }
 
-    function drawGrid(t, hue = 190) {
+    function drawGrid(t, hue = 190, sway = 0) {
       ctx.save();
-      const horizon = height * 0.62;
+      const horizon = height * (0.56 + Math.sin(t * 0.7) * sway);
       ctx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.22)`;
       ctx.lineWidth = DPR;
       for (let i = -15; i <= 15; i++) {
-        const x = width / 2 + i * width * 0.052;
+        const x = width / 2 + i * width * 0.054;
         ctx.beginPath();
         ctx.moveTo(x, horizon);
-        ctx.lineTo(width / 2 + i * width * 0.17, height);
+        ctx.lineTo(width / 2 + i * width * 0.18, height);
         ctx.stroke();
       }
-      for (let i = 0; i < 23; i++) {
-        const p = (i + ((t * 3.4) % 1)) / 23;
+      for (let i = 0; i < 24; i++) {
+        const p = (i + ((t * 4.3) % 1)) / 24;
         const y = horizon + p * p * (height - horizon);
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -307,37 +333,37 @@
       ctx.restore();
     }
 
-    function drawRings(t, yJitter = 0) {
+    function drawRings(t, centerY = 0, squash = 1) {
       ctx.save();
-      ctx.translate(width / 2, height / 2);
+      ctx.translate(width / 2, height / 2 + centerY);
       ctx.globalCompositeOperation = 'lighter';
       for (const ring of ringBursts) {
-        const p = (t * 0.9 + ring.phase) % 1;
-        const r = p * Math.min(width, height) * 0.56;
-        ctx.strokeStyle = `hsla(${ring.hue + t * 100},100%,65%,${0.22 * (1 - p)})`;
+        const p = (t * 1.0 + ring.phase) % 1;
+        const r = p * Math.min(width, height) * 0.58;
+        ctx.strokeStyle = `hsla(${ring.hue + t * 110},100%,65%,${0.23 * (1 - p)})`;
         ctx.lineWidth = (1 - p) * 8 * DPR;
         ctx.beginPath();
-        ctx.arc(0, Math.sin(t * 2 + ring.phase * 8) * yJitter, r, 0, Math.PI * 2);
+        ctx.ellipse(0, Math.sin(t * 2 + ring.phase * 8) * centerY * 0.35, r, r * squash, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
       ctx.restore();
     }
 
-    function drawTunnel(t) {
+    function drawTunnel(t, speed = 1.2, twist = 1) {
       ctx.save();
       ctx.translate(width / 2, height / 2);
       ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < 50; i++) {
-        const p = i / 50;
-        const z = ((t * 1.8 + p) % 1);
-        const radius = (1 - z) * Math.min(width, height) * 0.48;
-        ctx.strokeStyle = `hsla(${(i * 16 + t * 135) % 360},100%,${58 + 18 * Math.sin(t + i)}%,${0.16 + 0.25 * (1 - z)})`;
+      for (let i = 0; i < 56; i++) {
+        const p = i / 56;
+        const z = ((t * speed + p) % 1);
+        const radius = (1 - z) * Math.min(width, height) * 0.5;
+        ctx.strokeStyle = `hsla(${(i * 16 + t * 145) % 360},100%,${56 + 18 * Math.sin(t + i)}%,${0.16 + 0.25 * (1 - z)})`;
         ctx.lineWidth = 1 + (1 - z) * 6;
         ctx.beginPath();
-        for (let a = 0; a <= Math.PI * 2 + 0.001; a += Math.PI / 30) {
+        for (let a = 0; a <= Math.PI * 2 + 0.001; a += Math.PI / 32) {
           const rr = radius + Math.sin(a * 7 + t * 4 + i * 0.3) * 18;
-          const x = Math.cos(a + t * 0.44) * rr;
-          const y = Math.sin(a + t * 0.39) * rr * 0.72;
+          const x = Math.cos(a + t * 0.44 * twist) * rr;
+          const y = Math.sin(a + t * 0.39 * twist) * rr * 0.72;
           if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.stroke();
@@ -345,37 +371,23 @@
       ctx.restore();
     }
 
-    function cubeVertices(size) {
-      return [
-        [-size,-size,-size],[ size,-size,-size],[ size, size,-size],[-size, size,-size],
-        [-size,-size, size],[ size,-size, size],[ size, size, size],[-size, size, size]
-      ];
-    }
-    const cubeEdges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-    function rotatePoint([x,y,z], ax, ay, az) {
-      let px=x, py=y, pz=z;
-      let c=Math.cos(ax), s=Math.sin(ax); [py,pz]=[py*c-pz*s, py*s+pz*c];
-      c=Math.cos(ay); s=Math.sin(ay); [px,pz]=[px*c+pz*s, -px*s+pz*c];
-      c=Math.cos(az); s=Math.sin(az); [px,py]=[px*c-py*s, px*s+py*c];
-      return [px,py,pz];
-    }
-
-    function drawCubes(t, multiplier = 1) {
-      const verts = cubeVertices(36 * DPR);
+    function drawFlyCubes(t, speedMul = 1.2, cameraDip = 0) {
+      const verts = cubeVertices(1);
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      for (const cube of cubes) {
-        const orbit = t * cube.spin * multiplier + cube.angle;
-        const cx = Math.cos(orbit * 0.7) * width * 0.25;
-        const cy = Math.sin(orbit * 1.1 + cube.tilt) * height * 0.18;
-        const cz = 220 + Math.sin(orbit * 0.9) * 170 + cube.distance * 110;
+      for (const cube of flyCubes) {
+        cube.z -= cube.speed * speedMul;
+        cube.y += Math.sin(t * cube.spin + cube.tilt) * 0.8;
+        if (cube.z < -120) resetFlyCube(cube);
+        const scaleBase = cube.size;
         const projected = verts.map(v => {
-          const r = rotatePoint(v, orbit * 0.9, orbit * 0.6, orbit * 1.2);
-          return project(cx + r[0] * cube.scale, cy + r[1] * cube.scale, cz + r[2] * cube.scale);
+          const r = rotatePoint([v[0] * scaleBase, v[1] * scaleBase, v[2] * scaleBase], t * cube.spin, t * 0.7 + cube.tilt, t * 0.9);
+          return project(cube.x + r[0], cube.y + r[1] + cameraDip, cube.z + r[2]);
         });
-        ctx.strokeStyle = `hsla(${(cube.hue + t * 78) % 360},100%,70%,0.65)`;
-        ctx.lineWidth = 2.1 * DPR;
-        for (const [a,b] of cubeEdges) {
+        const alpha = clamp(1.2 - cube.z / 1800, 0.18, 0.92);
+        ctx.strokeStyle = `hsla(${cube.hue + t * 90},100%,70%,${alpha})`;
+        ctx.lineWidth = clamp(1.2 + (1800 - cube.z) / 700, 1, 7) * DPR * 0.6;
+        for (const [a, b] of cubeEdges) {
           ctx.beginPath();
           ctx.moveTo(projected[a].x, projected[a].y);
           ctx.lineTo(projected[b].x, projected[b].y);
@@ -385,31 +397,36 @@
       ctx.restore();
     }
 
-    function drawPlasma(t, alpha = 0.32) {
-      const cell = 12 * DPR;
+    function drawUnderpass(t, speedMul = 1.2) {
       ctx.save();
-      ctx.globalAlpha = alpha;
-      for (let y = 0; y < height; y += cell) {
-        for (let x = 0; x < width; x += cell) {
-          const nx = x / width, ny = y / height;
-          const v = Math.sin(nx * 14 + t * 2.6) + Math.sin(ny * 13 - t * 1.9) + Math.sin((nx + ny) * 11 + t * 1.3) + Math.sin(Math.hypot(nx - 0.5, ny - 0.5) * 28 - t * 3.5);
-          ctx.fillStyle = `hsla(${245 + v * 28 + Math.sin(t) * 18},100%,${38 + v * 7}%,0.8)`;
-          ctx.fillRect(x, y, cell + 1, cell + 1);
-        }
+      ctx.globalCompositeOperation = 'lighter';
+      for (const col of underColumns) {
+        col.z -= col.speed * speedMul;
+        if (col.z < -80) resetColumn(col);
+        const bob = Math.sin(t * 2 + col.seed * 20) * 18 * DPR;
+        const top = project(col.x, col.yBase - col.height + bob, col.z);
+        const bottom = project(col.x, col.yBase + bob, col.z);
+        const w = col.width * bottom.scale;
+        const h = Math.max(8 * DPR, (bottom.y - top.y));
+        ctx.fillStyle = `hsla(${col.hue + t * 60},100%,60%,0.28)`;
+        ctx.fillRect(bottom.x - w * 0.5, top.y, w, h);
+        ctx.strokeStyle = `hsla(${col.hue + t * 80},100%,74%,0.55)`;
+        ctx.lineWidth = 2 * DPR;
+        ctx.strokeRect(bottom.x - w * 0.5, top.y, w, h);
       }
       ctx.restore();
     }
 
-    function drawHelix(t) {
+    function drawHelix(t, dive = 0) {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < 180; i++) {
-        const p = i / 180;
-        const ang = p * Math.PI * 10 + t * 2.3;
-        const z = Math.sin(p * Math.PI * 2 + t) * 280 + 380;
-        const radius = width * 0.18 + Math.sin(t + p * 12) * width * 0.03;
-        const a = project(Math.cos(ang) * radius, (p - 0.5) * height * 0.9, z);
-        const b = project(Math.cos(ang + Math.PI) * radius, -(p - 0.5) * height * 0.9, z);
+      for (let i = 0; i < 220; i++) {
+        const p = i / 220;
+        const ang = p * Math.PI * 12 + t * 2.6;
+        const z = ((p * 1800 - t * 340) % 1800) - 200;
+        const radius = width * 0.16 + Math.sin(t + p * 14) * width * 0.03;
+        const a = project(Math.cos(ang) * radius, (p - 0.5) * height * 0.9 + dive, z + 700);
+        const b = project(Math.cos(ang + Math.PI) * radius, -(p - 0.5) * height * 0.9 - dive, z + 700);
         ctx.fillStyle = `hsla(${190 + p * 150 + t * 70},100%,70%,0.55)`;
         ctx.fillRect(a.x, a.y, 3 * DPR, 3 * DPR);
         ctx.fillStyle = `hsla(${320 - p * 120 + t * 50},100%,70%,0.55)`;
@@ -418,36 +435,82 @@
       ctx.restore();
     }
 
-    function drawSkyline(t) {
+    function drawSkyline(t, rise = 0) {
       ctx.save();
-      const base = height * 0.82;
-      const bars = 64;
+      const base = height * (0.88 - rise);
+      const bars = 72;
       for (let i = 0; i < bars; i++) {
         const x = i / bars * width;
         const pulse = 0.5 + 0.5 * Math.sin(t * 5 + i * 0.45);
-        const h = lerp(height * 0.06, height * 0.42, pulse);
-        ctx.fillStyle = `hsla(${190 + i * 3 + t * 45},100%,${45 + pulse * 25}%,0.55)`;
+        const h = lerp(height * 0.05, height * 0.48, pulse);
+        ctx.fillStyle = `hsla(${190 + i * 3 + t * 45},100%,${44 + pulse * 26}%,0.58)`;
         ctx.fillRect(x, base - h, width / bars - 2 * DPR, h);
-        ctx.fillStyle = 'rgba(255,255,255,0.05)';
-        for (let w = 0; w < 4; w++) {
-          const wy = base - h + 10 * DPR + w * 18 * DPR;
-          if (wy < base - 6 * DPR) ctx.fillRect(x + 4 * DPR, wy, 4 * DPR, 6 * DPR);
+      }
+      ctx.restore();
+    }
+
+    function drawShards(t, fall = 1) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (const shard of shards) {
+        const y = ((shard.y + t * 0.12 * shard.speed * fall) % 1) * height;
+        const x = width * 0.5 + Math.sin(t * shard.speed + shard.x * 10) * width * 0.45 * shard.z;
+        const len = (18 + shard.z * 42) * DPR;
+        ctx.strokeStyle = `hsla(${shard.hue + t * 80},100%,70%,0.52)`;
+        ctx.lineWidth = (1 + shard.z * 2) * DPR;
+        ctx.beginPath();
+        ctx.moveTo(x, y - len * 0.5);
+        ctx.lineTo(x + Math.sin(t * 2 + shard.x * 5) * 22 * DPR, y + len * 0.5);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawPlasma(t, alpha = 0.3, zoom = 1) {
+      const cell = 12 * DPR;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      for (let y = 0; y < height; y += cell) {
+        for (let x = 0; x < width; x += cell) {
+          const nx = (x / width - 0.5) * zoom + 0.5, ny = (y / height - 0.5) * zoom + 0.5;
+          const v = Math.sin(nx * 14 + t * 2.6) + Math.sin(ny * 13 - t * 1.9) + Math.sin((nx + ny) * 11 + t * 1.3) + Math.sin(Math.hypot(nx - 0.5, ny - 0.5) * 28 - t * 3.5);
+          ctx.fillStyle = `hsla(${245 + v * 28 + Math.sin(t) * 18},100%,${38 + v * 7}%,0.82)`;
+          ctx.fillRect(x, y, cell + 1, cell + 1);
         }
       }
       ctx.restore();
     }
 
-    function drawSigil(t) {
+    function drawOrbitalSweep(t) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (const orb of orbSwarm) {
+        const p = (orb.lane + t * 0.08) % 1;
+        const z = 120 + (1 - p) * 1800;
+        const ang = t * 1.8 + orb.phase + p * 10;
+        const radius = width * (0.08 + p * 0.26);
+        const pos = project(Math.cos(ang) * radius, Math.sin(ang * 1.7) * height * 0.22, z);
+        const r = (10 + (1 - p) * 42) * pos.scale;
+        const g = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, r * 2.6);
+        g.addColorStop(0, `hsla(${orb.hue + t * 60},100%,72%,0.52)`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 2.6, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawSigil(t, scaleBoost = 1) {
       ctx.save();
       ctx.translate(width / 2, height / 2);
-      ctx.rotate(t * 0.38);
+      ctx.rotate(t * 0.4);
       ctx.globalCompositeOperation = 'lighter';
       for (let layer = 0; layer < 4; layer++) {
         ctx.strokeStyle = ['rgba(255,60,172,0.75)','rgba(0,240,255,0.82)','rgba(255,228,94,0.65)','rgba(168,109,255,0.55)'][layer];
         ctx.lineWidth = (7 - layer) * DPR;
         ctx.beginPath();
         for (let a = 0; a <= Math.PI * 2 + 0.001; a += 0.02) {
-          const r = Math.min(width, height) * (0.13 + layer * 0.02) + Math.sin(a * (5 + layer) + t * (2 + layer * 0.4)) * 18 * DPR;
+          const r = Math.min(width, height) * (0.11 + layer * 0.022) * scaleBoost + Math.sin(a * (5 + layer) + t * (2 + layer * 0.45)) * 18 * DPR;
           const x = Math.cos(a + layer * 0.3) * r;
           const y = Math.sin(a - layer * 0.2) * r;
           if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -458,24 +521,7 @@
       ctx.restore();
     }
 
-    function drawShards(t) {
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      for (const shard of shards) {
-        const y = ((shard.y + t * 0.12 * shard.speed) % 1) * height;
-        const x = width * 0.5 + Math.sin(t * shard.speed + shard.x * 10) * width * 0.42 * shard.z;
-        const len = (18 + shard.z * 36) * DPR;
-        ctx.strokeStyle = `hsla(${shard.hue + t * 80},100%,70%,0.5)`;
-        ctx.lineWidth = (1 + shard.z * 2) * DPR;
-        ctx.beginPath();
-        ctx.moveTo(x, y - len * 0.5);
-        ctx.lineTo(x + Math.sin(t * 2 + shard.x * 5) * 20 * DPR, y + len * 0.5);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    function drawLogo(t, label = 'FLUX') {
+    function drawLogo(t, label = 'FLUX', y = 0.27) {
       ctx.save();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -484,11 +530,11 @@
       ctx.fillStyle = '#fff';
       ctx.shadowColor = 'rgba(255,60,172,0.92)';
       ctx.shadowBlur = 28;
-      ctx.fillText(label, width / 2, height * 0.27 + bounce);
+      ctx.fillText(label, width / 2, height * y + bounce);
       ctx.strokeStyle = 'rgba(0,240,255,0.92)';
       ctx.lineWidth = 4 * DPR;
       ctx.shadowColor = 'rgba(0,240,255,0.86)';
-      ctx.strokeText(label, width / 2, height * 0.27 + bounce);
+      ctx.strokeText(label, width / 2, height * y + bounce);
       ctx.restore();
     }
 
@@ -499,7 +545,7 @@
         ctx.fillStyle = y % (8 * DPR) === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(0,0,0,0.16)';
         ctx.fillRect(0, y, width, 2 * DPR);
       }
-      ctx.globalAlpha = 0.08;
+      ctx.globalAlpha = 0.09;
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, (0.5 + 0.5 * Math.sin(t * 11.5)) * height, width, 4 * DPR);
       ctx.restore();
@@ -517,13 +563,13 @@
 
     function drawEndCard(t) {
       ctx.save();
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillStyle = 'rgba(0,0,0,0.34)';
       ctx.fillRect(0, 0, width, height);
-      drawLogo(t, 'THE END');
+      drawLogo(t, 'THE END', 0.32);
       ctx.textAlign = 'center';
       ctx.font = `700 ${Math.max(16, Math.floor(Math.min(width, height) * 0.028))}px Verdana, sans-serif`;
       ctx.fillStyle = '#ffe45e';
-      ctx.fillText('Trackmo complete // stopped before the music tail', width / 2, height * 0.42);
+      ctx.fillText('Velocity cut complete // stopped before the music tail', width / 2, height * 0.46);
       ctx.restore();
     }
 
@@ -534,59 +580,91 @@
       switch (sceneIndex) {
         case 0:
           drawBackground(t, 0);
-          drawStars(t, 0.8 + easePulse(local * 0.8) * 0.6);
-          drawGrid(t, 190);
+          drawStars(t, 1.1);
+          drawGrid(t, 195, 0.02);
           drawLogo(local, 'FLUX');
-          drawRings(local, 20 * DPR);
+          drawRings(local, 14 * DPR, 0.78);
           break;
         case 1:
-          drawBackground(t, 20);
-          drawStars(t, 1.2);
-          drawCubes(local, 1.1);
-          drawGrid(t, 200);
-          drawRings(local * 1.4, 10 * DPR);
+          drawBackground(t, 18);
+          drawStars(t, 2.2, Math.sin(local * 1.8) * 0.6);
+          drawFlyCubes(local, 1.3);
           break;
         case 2:
           drawBackground(t, 35);
-          drawStars(t, 1.6);
-          drawTunnel(local * 1.2);
-          drawPlasma(local, 0.22);
+          drawFlyCubes(local, 2.1, Math.sin(local * 2.2) * 80 * DPR);
+          drawStars(t, 1.8);
+          drawRings(local * 1.3, -20 * DPR, 0.66);
           break;
         case 3:
-          drawBackground(t, 55);
-          drawHelix(local);
-          drawRings(local * 1.6, 36 * DPR);
-          drawStars(t, 0.9);
+          drawBackground(t, 56);
+          drawUnderpass(local, 1.8);
+          drawStars(t, 1.2, Math.sin(local * 2.1));
+          drawGrid(t, 205, 0.03);
           break;
         case 4:
-          drawBackground(t, 80);
-          drawSkyline(local);
-          drawGrid(t, 300);
-          drawStars(t, 0.7);
-          drawLogo(local * 0.6, 'LANGCRAFT');
+          drawBackground(t, 78);
+          drawTunnel(local, 1.6, 1.2);
+          drawStars(t, 1.7);
           break;
         case 5:
-          drawBackground(t, 110);
-          drawSigil(local);
-          drawPlasma(local * 0.9, 0.18);
-          drawShards(local);
+          drawBackground(t, 98);
+          drawHelix(local, Math.sin(local * 1.8) * 60 * DPR);
+          drawStars(t, 1.0);
+          drawRings(local * 1.4, 24 * DPR, 0.7);
           break;
         case 6:
-          drawBackground(t, 145);
-          drawShards(local * 1.6);
-          drawCubes(local * 1.3, 1.6);
-          drawStars(t, 1.4);
+          drawBackground(t, 120);
+          drawSkyline(local, 0.08 + Math.sin(local * 0.9) * 0.04);
+          drawGrid(t, 300, 0.02);
+          drawStars(t, 0.9);
+          drawLogo(local * 0.7, 'LANGCRAFT', 0.24);
+          break;
+        case 7:
+          drawBackground(t, 142);
+          drawShards(local, 1.9);
+          drawUnderpass(local * 0.9, 1.4);
+          break;
+        case 8:
+          drawBackground(t, 164);
+          drawOrbitalSweep(local);
+          drawStars(t, 1.4, Math.cos(local * 1.7) * 0.4);
+          drawFlyCubes(local * 0.8, 0.95);
+          break;
+        case 9:
+          drawBackground(t, 186);
+          drawPlasma(local, 0.34, 1.55 - Math.sin(local * 0.8) * 0.2);
+          drawStars(t, 1.3);
+          drawRings(local * 1.6, 0, 0.55);
+          break;
+        case 10:
+          drawBackground(t, 210);
+          drawTunnel(local, 2.0, 1.6);
+          drawFlyCubes(local * 0.9, 1.4);
+          break;
+        case 11:
+          drawBackground(t, 235);
+          drawShards(local, 2.4);
+          drawFlyCubes(local * 1.1, 2.2);
+          drawStars(t, 1.7);
+          break;
+        case 12:
+          drawBackground(t, 265);
+          drawSigil(local, 1.15 + Math.sin(local * 0.8) * 0.08);
+          drawTunnel(local * 0.7, 1.0, 0.7);
+          break;
+        case 13:
+          drawBackground(t, 300);
+          drawStars(t, 2.5);
+          drawFlyCubes(local * 1.2, 2.4);
+          drawUnderpass(local * 1.1, 2.2);
+          drawRings(local * 1.7, 0, 0.6);
+          drawLogo(local, 'FLUX', 0.2);
           break;
         default:
-          drawBackground(t, 180);
-          drawStars(t, 1.7);
-          drawGrid(t, 195);
-          drawTunnel(local * 1.15);
-          drawRings(local * 1.3, 20 * DPR);
-          drawCubes(local * 0.8, 0.9);
-          drawSigil(local * 0.7);
+          drawBackground(t, 330);
           const fade = 1 - smoothstep(FADE_START, DEMO_LEN, t);
-          ctx.save(); ctx.globalAlpha = fade; drawLogo(local, 'FLUX'); ctx.restore();
+          ctx.save(); ctx.globalAlpha = fade; drawStars(t, 1.4); drawSigil(local, 1.1); ctx.restore();
           break;
       }
       drawScanlines(t);
@@ -603,7 +681,8 @@
         drawBackground(t, 220);
         drawEndCard(t);
       }
-      const scrollX = width - (((state === 'running' ? t : (performance.now() - startedAt) / 1000) * 220 * DPR) % (scroller.scrollWidth + width));
+      const scrollT = state === 'running' ? t : (performance.now() - startedAt) / 1000;
+      const scrollX = width - ((scrollT * 240 * DPR) % (scroller.scrollWidth + width));
       scroller.style.transform = `translateX(${scrollX / DPR}px)`;
       if (state !== 'idle') requestAnimationFrame(render);
     }
