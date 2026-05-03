@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flux Demo Scene</title>
+  <style>
+    :root {
+      --bg: #05010a;
+      --fg: #f5e9ff;
+      --accent: #ff3cac;
+      --accent2: #00f0ff;
+      --accent3: #ffe45e;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 30%, #14071f 0%, #05010a 55%, #000 100%);
+      color: var(--fg);
+      font-family: "Trebuchet MS", "Verdana", system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    #overlay, #intro {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    #intro {
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(3, 0, 8, 0.95), rgba(10, 2, 18, 0.84));
+      pointer-events: auto;
+      transition: opacity 500ms ease;
+      z-index: 3;
+    }
+
+    #intro.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .panel {
+      width: min(720px, 92vw);
+      border: 2px solid rgba(255,255,255,0.25);
+      background: rgba(12, 8, 24, 0.88);
+      box-shadow: 0 0 30px rgba(255, 60, 172, 0.25), inset 0 0 30px rgba(0, 240, 255, 0.08);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: clamp(34px, 7vw, 64px);
+      letter-spacing: 0.15em;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: white;
+      text-shadow:
+        0 0 8px rgba(255,255,255,0.7),
+        0 0 16px rgba(255,60,172,0.9),
+        0 0 30px rgba(0,240,255,0.75);
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #cab7dd;
+      margin-bottom: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    button {
+      pointer-events: auto;
+      cursor: pointer;
+      border: 0;
+      padding: 14px 24px;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #160611;
+      background: linear-gradient(90deg, var(--accent3), var(--accent), var(--accent2));
+      box-shadow: 0 0 22px rgba(255, 60, 172, 0.45);
+    }
+
+    button:hover { filter: brightness(1.08); }
+
+    #hud {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 0 0 10px rgba(0,0,0,0.9);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    #scroller-wrap {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 22px;
+      height: 48px;
+      overflow: hidden;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    #scroller {
+      position: absolute;
+      white-space: nowrap;
+      font-size: clamp(18px, 2.3vw, 28px);
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: #fef6ff;
+      text-transform: uppercase;
+      text-shadow:
+        2px 2px 0 rgba(255,60,172,0.8),
+        -2px -2px 0 rgba(0,240,255,0.7),
+        0 0 16px rgba(255,255,255,0.35);
+      will-change: transform;
+    }
+
+    #footer {
+      position: fixed;
+      right: 16px;
+      bottom: 76px;
+      text-align: right;
+      font-size: 12px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(255,255,255,0.72);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .blink { animation: blink 1s steps(2, end) infinite; }
+    @keyframes blink { 50% { opacity: 0.25; } }
+  </style>
+</head>
+<body>
+  <canvas id="screen"></canvas>
+
+  <div id="intro">
+    <div class="panel">
+      <div class="logo">FLUX DEMO</div>
+      <div class="subtitle">A small browser trackmo homage for John — neon tunnels, starfields, chrome text and procedural bleeps.</div>
+      <button id="startBtn">Start Demo</button>
+      <p style="margin-top:16px;color:#9e90b7;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Best with sound on. Click or press space to launch.</p>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div>Flux Crew // Browser Trackmo</div>
+    <div id="phaseLabel">Booting...</div>
+  </div>
+
+  <div id="footer">
+    Real-time canvas + WebAudio<br />
+    Somewhere between Amiga memory and late-90s PC ego <span class="blink">_</span>
+  </div>
+
+  <div id="scroller-wrap">
+    <div id="scroller"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('screen');
+    const ctx = canvas.getContext('2d');
+    const intro = document.getElementById('intro');
+    const startBtn = document.getElementById('startBtn');
+    const phaseLabel = document.getElementById('phaseLabel');
+    const scroller = document.getElementById('scroller');
+
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    let width = 0;
+    let height = 0;
+    let audioCtx = null;
+    let masterGain = null;
+    let startedAt = 0;
+    let running = false;
+    let bassLfo = 0;
+
+    const scrollerText = ' GREETINGS TO JOHN // THIS IS A SMALL HOMAGE TO THE DEMOSCENE // PLASMA // TUNNEL // STARS // CHROME TEXT // SYNTH BASS // KEEP THE FAITH // '; 
+    scroller.textContent = scrollerText.repeat(4);
+
+    const stars = Array.from({ length: 180 }, () => ({
+      x: (Math.random() * 2 - 1) * 1.8,
+      y: (Math.random() * 2 - 1) * 1.8,
+      z: Math.random() * 0.9 + 0.1,
+      hue: Math.random() * 120 + 180
+    }));
+
+    const phases = [
+      { name: 'Boot Sector', start: 0, end: 8 },
+      { name: 'Vector Tunnel', start: 8, end: 18 },
+      { name: 'Plasma Bloom', start: 18, end: 28 },
+      { name: 'Chrome Sigil', start: 28, end: 42 },
+      { name: 'Starfield Exit', start: 42, end: 999 }
+    ];
+
+    function resize() {
+      width = Math.floor(window.innerWidth * DPR);
+      height = Math.floor(window.innerHeight * DPR);
+      canvas.width = width;
+      canvas.height = height;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function smoothstep(a, b, x) {
+      const t = clamp((x - a) / (b - a), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+
+    function currentTime() {
+      return running ? (performance.now() - startedAt) / 1000 : 0;
+    }
+
+    function currentPhase(t) {
+      return phases.find(p => t >= p.start && t < p.end) || phases[phases.length - 1];
+    }
+
+    function drawBackground(t) {
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, '#13031c');
+      grad.addColorStop(0.45, '#05010a');
+      grad.addColorStop(1, '#000000');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      const pulse = 0.5 + 0.5 * Math.sin(t * 2.1 + bassLfo * 4);
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = `rgba(255, 30, 150, ${0.05 + pulse * 0.05})`;
+      ctx.beginPath();
+      ctx.arc(width * 0.5, height * 0.35, width * (0.25 + 0.05 * pulse), 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = `rgba(0, 220, 255, ${0.04 + (1 - pulse) * 0.05})`;
+      ctx.beginPath();
+      ctx.arc(width * 0.6, height * 0.5, width * (0.18 + 0.03 * Math.cos(t * 1.4)), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function drawStars(t) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (const star of stars) {
+        star.z -= 0.012 + 0.02 * (0.5 + 0.5 * Math.sin(t * 1.5));
+        if (star.z <= 0.02) {
+          star.x = (Math.random() * 2 - 1) * 1.8;
+          star.y = (Math.random() * 2 - 1) * 1.8;
+          star.z = 1;
+          star.hue = Math.random() * 120 + 180;
+        }
+        const px = width * 0.5 + (star.x / star.z) * width * 0.32;
+        const py = height * 0.5 + (star.y / star.z) * height * 0.32;
+        const r = clamp((1 - star.z) * 4.5, 1, 6);
+        ctx.fillStyle = `hsla(${star.hue}, 100%, 75%, ${clamp(1 - star.z, 0.2, 1)})`;
+        ctx.fillRect(px, py, r, r);
+      }
+      ctx.restore();
+    }
+
+    function drawTunnel(t) {
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 42; i++) {
+        const p = i / 42;
+        const z = ((t * 1.45 + p) % 1);
+        const radius = (1 - z) * Math.min(width, height) * 0.44;
+        const wobble = Math.sin(t * 2 + i * 0.4) * 14 + Math.cos(t * 1.3 + i * 0.3) * 12;
+        ctx.strokeStyle = `hsla(${(i * 17 + t * 110) % 360}, 95%, ${60 + 20 * Math.sin(t + i)}%, ${0.14 + 0.22 * (1 - z)})`;
+        ctx.lineWidth = 1 + (1 - z) * 5;
+        ctx.beginPath();
+        for (let a = 0; a <= Math.PI * 2 + 0.001; a += Math.PI / 32) {
+          const rr = radius + Math.sin(a * 6 + t * 3 + i) * wobble;
+          const x = Math.cos(a + t * 0.28) * rr;
+          const y = Math.sin(a + t * 0.31) * rr * 0.66;
+          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawPlasma(t) {
+      const cell = 10 * DPR;
+      ctx.save();
+      ctx.globalAlpha = 0.38;
+      for (let y = 0; y < height; y += cell) {
+        for (let x = 0; x < width; x += cell) {
+          const nx = x / width;
+          const ny = y / height;
+          const v = Math.sin(nx * 11 + t * 2.2)
+            + Math.sin((ny * 14 - t * 1.7))
+            + Math.sin((nx + ny) * 10 + t * 1.1)
+            + Math.sin(Math.hypot(nx - 0.5, ny - 0.5) * 24 - t * 3.2);
+          const hue = 220 + v * 42 + Math.sin(t) * 30;
+          const light = 40 + v * 8;
+          ctx.fillStyle = `hsla(${hue}, 100%, ${light}%, 0.8)`;
+          ctx.fillRect(x, y, cell + 1, cell + 1);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawGrid(t) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.18)';
+      ctx.lineWidth = DPR;
+      const horizon = height * 0.58;
+      for (let i = -12; i <= 12; i++) {
+        const x = width / 2 + i * width * 0.06;
+        ctx.beginPath();
+        ctx.moveTo(x, horizon);
+        ctx.lineTo(width / 2 + i * width * 0.12, height);
+        ctx.stroke();
+      }
+      for (let i = 0; i < 18; i++) {
+        const p = (i + (t * 2.4 % 1)) / 18;
+        const y = horizon + p * p * (height - horizon);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawTitle(t) {
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const bounce = Math.sin(t * 2.6) * 10;
+      ctx.font = `900 ${Math.floor(Math.min(width, height) * 0.12)}px Impact, Haettenschweiler, sans-serif`;
+      ctx.fillStyle = '#f7f4ff';
+      ctx.shadowColor = 'rgba(255, 50, 170, 0.85)';
+      ctx.shadowBlur = 28;
+      ctx.fillText('FLUX', width / 2, height * 0.28 + bounce);
+      ctx.shadowColor = 'rgba(0, 240, 255, 0.9)';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#180419';
+      ctx.lineWidth = 4 * DPR;
+      ctx.strokeStyle = 'rgba(0,240,255,0.9)';
+      ctx.strokeText('FLUX', width / 2, height * 0.28 + bounce);
+
+      ctx.font = `700 ${Math.floor(Math.min(width, height) * 0.038)}px Verdana, sans-serif`;
+      ctx.fillStyle = '#ffe45e';
+      ctx.fillText('BROWSER TRACKMO // 2026', width / 2, height * 0.39);
+      ctx.restore();
+    }
+
+    function drawSigil(t) {
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.scale(1 + Math.sin(t * 1.8) * 0.04, 1 + Math.cos(t * 1.5) * 0.04);
+      ctx.rotate(t * 0.45);
+      const radius = Math.min(width, height) * 0.14;
+      for (let i = 0; i < 3; i++) {
+        ctx.rotate(Math.PI / 3);
+        ctx.strokeStyle = ['rgba(255,60,172,0.8)','rgba(0,240,255,0.8)','rgba(255,228,94,0.65)'][i];
+        ctx.lineWidth = (6 - i) * DPR;
+        ctx.beginPath();
+        for (let a = 0; a < Math.PI * 2; a += 0.01) {
+          const r = radius + Math.sin(a * 5 + t * 2 + i) * radius * 0.18;
+          const x = Math.cos(a) * r;
+          const y = Math.sin(a) * r;
+          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawScanlines(t) {
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      for (let y = 0; y < height; y += 4 * DPR) {
+        ctx.fillStyle = y % (8 * DPR) === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.15)';
+        ctx.fillRect(0, y, width, 2 * DPR);
+      }
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, (Math.sin(t * 12) * 0.5 + 0.5) * height, width, 4 * DPR);
+      ctx.restore();
+    }
+
+    function render() {
+      if (!running) return;
+      const t = currentTime();
+      const phase = currentPhase(t);
+      phaseLabel.textContent = phase.name;
+      drawBackground(t);
+      drawStars(t);
+      drawGrid(t);
+
+      const tunnelMix = smoothstep(4, 10, t) * (1 - smoothstep(24, 31, t));
+      if (tunnelMix > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = tunnelMix;
+        drawTunnel(t);
+        ctx.restore();
+      }
+
+      const plasmaMix = smoothstep(16, 21, t) * (1 - smoothstep(34, 39, t));
+      if (plasmaMix > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = plasmaMix;
+        drawPlasma(t);
+        ctx.restore();
+      }
+
+      const titleMix = 1 - smoothstep(20, 28, t);
+      if (titleMix > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = titleMix;
+        drawTitle(t);
+        ctx.restore();
+      }
+
+      const sigilMix = smoothstep(25, 30, t);
+      if (sigilMix > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = clamp(sigilMix, 0, 0.95);
+        drawSigil(t);
+        ctx.restore();
+      }
+
+      drawScanlines(t);
+
+      const scrollX = width - ((t * 180 * DPR) % (scroller.scrollWidth + width));
+      scroller.style.transform = `translateX(${scrollX / DPR}px)`;
+
+      requestAnimationFrame(render);
+    }
+
+    function makeKick(time, gain = 0.8) {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(120, time);
+      osc.frequency.exponentialRampToValueAtTime(42, time + 0.12);
+      g.gain.setValueAtTime(gain, time);
+      g.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+      osc.connect(g).connect(masterGain);
+      osc.start(time);
+      osc.stop(time + 0.16);
+    }
+
+    function makeHat(time, gain = 0.09) {
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.06, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      const src = audioCtx.createBufferSource();
+      const hp = audioCtx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 5000;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(gain, time);
+      g.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+      src.buffer = buffer;
+      src.connect(hp).connect(g).connect(masterGain);
+      src.start(time);
+    }
+
+    function makeBass(time, noteHz, duration, gain = 0.18) {
+      const osc = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const filter = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc2.type = 'square';
+      osc.frequency.setValueAtTime(noteHz, time);
+      osc2.frequency.setValueAtTime(noteHz * 0.502, time);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(280, time);
+      filter.frequency.linearRampToValueAtTime(900, time + duration * 0.35);
+      g.gain.setValueAtTime(0.001, time);
+      g.gain.linearRampToValueAtTime(gain, time + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      osc.connect(filter);
+      osc2.connect(filter);
+      filter.connect(g).connect(masterGain);
+      osc.start(time);
+      osc2.start(time);
+      osc.stop(time + duration + 0.02);
+      osc2.stop(time + duration + 0.02);
+    }
+
+    function makeLead(time, noteHz, duration, gain = 0.07) {
+      const osc = audioCtx.createOscillator();
+      const vibrato = audioCtx.createOscillator();
+      const vibratoGain = audioCtx.createGain();
+      const g = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(noteHz, time);
+      vibrato.type = 'sine';
+      vibrato.frequency.value = 5.8;
+      vibratoGain.gain.value = 8;
+      vibrato.connect(vibratoGain).connect(osc.frequency);
+      g.gain.setValueAtTime(0.001, time);
+      g.gain.linearRampToValueAtTime(gain, time + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      osc.connect(g).connect(masterGain);
+      vibrato.start(time);
+      osc.start(time);
+      osc.stop(time + duration + 0.02);
+      vibrato.stop(time + duration + 0.02);
+    }
+
+    function startMusic() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.26;
+      masterGain.connect(audioCtx.destination);
+
+      const bpm = 132;
+      const beat = 60 / bpm;
+      const bars = 64;
+      const bassline = [55, 55, 82.41, 55, 65.41, 55, 73.42, 82.41];
+      const melody = [220, 246.94, 293.66, 329.63, 293.66, 246.94, 220, 196];
+      const now = audioCtx.currentTime + 0.06;
+
+      for (let bar = 0; bar < bars; bar++) {
+        const base = now + bar * beat * 4;
+        makeKick(base);
+        makeKick(base + beat * 2, 0.72);
+        makeKick(base + beat * 3.5, 0.5);
+        for (let i = 0; i < 8; i++) makeHat(base + i * beat * 0.5, i % 2 ? 0.05 : 0.08);
+
+        for (let step = 0; step < 4; step++) {
+          const idx = (bar + step) % bassline.length;
+          makeBass(base + step * beat, bassline[idx], beat * 0.9, 0.16 + (step === 0 ? 0.05 : 0));
+        }
+
+        if (bar > 3) {
+          const note = melody[bar % melody.length];
+          makeLead(base + beat * 0.5, note, beat * 1.5, 0.05 + (bar % 8 === 0 ? 0.04 : 0));
+          if (bar % 4 === 2) makeLead(base + beat * 2.25, note * 1.5, beat * 0.75, 0.04);
+        }
+      }
+
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.18;
+      lfoGain.gain.value = 1;
+      lfo.connect(lfoGain);
+      lfoGain.connect({
+        set value(v) { bassLfo = v; },
+        get value() { return bassLfo; }
+      });
+      lfo.start();
+
+      function updateLfo() {
+        if (!running || !audioCtx) return;
+        bassLfo = 0.5 + 0.5 * Math.sin(audioCtx.currentTime * 1.15);
+        requestAnimationFrame(updateLfo);
+      }
+      updateLfo();
+    }
+
+    function startDemo() {
+      if (running) return;
+      running = true;
+      startedAt = performance.now();
+      intro.classList.add('hidden');
+      startMusic();
+      render();
+    }
+
+    startBtn.addEventListener('click', startDemo);
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        startDemo();
+      }
+    });
+    window.addEventListener('resize', resize);
+    resize();
+  </script>
+</body>
+</html>
