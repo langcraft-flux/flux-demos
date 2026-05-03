@@ -200,6 +200,7 @@
     let startedAt = 0;
     let running = false;
     let bassLfo = 0;
+    let audioWarning = '';
 
     const scrollerText = ' GREETINGS TO JOHN // THIS IS A SMALL HOMAGE TO THE DEMOSCENE // PLASMA // TUNNEL // STARS // CHROME TEXT // SYNTH BASS // KEEP THE FAITH // '; 
     scroller.textContent = scrollerText.repeat(4);
@@ -453,6 +454,7 @@
       }
 
       drawScanlines(t);
+      drawAudioWarning();
 
       const scrollX = width - ((t * 180 * DPR) % (scroller.scrollWidth + width));
       scroller.style.transform = `translateX(${scrollX / DPR}px)`;
@@ -534,8 +536,18 @@
       vibrato.stop(time + duration + 0.02);
     }
 
-    function startMusic() {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    async function startMusic() {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtor) {
+        audioWarning = 'Visuals only: WebAudio unavailable on this browser';
+        return;
+      }
+
+      audioCtx = new AudioCtor();
+      if (audioCtx.state === 'suspended' && audioCtx.resume) {
+        await audioCtx.resume();
+      }
+
       masterGain = audioCtx.createGain();
       masterGain.gain.value = 0.26;
       masterGain.connect(audioCtx.destination);
@@ -565,37 +577,37 @@
           if (bar % 4 === 2) makeLead(base + beat * 2.25, note * 1.5, beat * 0.75, 0.04);
         }
       }
-
-      const lfo = audioCtx.createOscillator();
-      const lfoGain = audioCtx.createGain();
-      lfo.type = 'sine';
-      lfo.frequency.value = 0.18;
-      lfoGain.gain.value = 1;
-      lfo.connect(lfoGain);
-      lfoGain.connect({
-        set value(v) { bassLfo = v; },
-        get value() { return bassLfo; }
-      });
-      lfo.start();
-
-      function updateLfo() {
-        if (!running || !audioCtx) return;
-        bassLfo = 0.5 + 0.5 * Math.sin(audioCtx.currentTime * 1.15);
-        requestAnimationFrame(updateLfo);
-      }
-      updateLfo();
     }
 
-    function startDemo() {
+    function drawAudioWarning() {
+      if (!audioWarning) return;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = `700 ${Math.max(14, Math.floor(Math.min(width, height) * 0.018))}px Verdana, sans-serif`;
+      ctx.fillStyle = 'rgba(255, 228, 94, 0.95)';
+      ctx.fillText(audioWarning, width / 2, height * 0.92);
+      ctx.restore();
+    }
+
+    async function startDemo() {
       if (running) return;
       running = true;
       startedAt = performance.now();
       intro.classList.add('hidden');
-      startMusic();
       render();
+      try {
+        await startMusic();
+      } catch (err) {
+        console.error(err);
+        audioWarning = 'Visuals running, but audio failed on this browser';
+      }
     }
 
     startBtn.addEventListener('click', startDemo);
+    startBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      startDemo();
+    }, { passive: false });
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
